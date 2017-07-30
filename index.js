@@ -22,6 +22,8 @@ function connectToClient() {
 }
 
 function searchVideoData(searchPhrase) {
+  var searchKeywords = searchPhrase.split(" ");
+
   return new Promise((res, rej) => {
     client.search({
     index: 'youtube-video-data-index',
@@ -33,59 +35,94 @@ function searchVideoData(searchPhrase) {
       }
     }
   }, function(error, response) {
+    //res(response.hits.hits);
+
     console.log('Response: ' + JSON.stringify(response));
     // Go through each video
     for (var i = 0; i < response.hits.hits.length; i++) {
 
-      var video_id = response.hits.hits[i]._source.video_id;
+        var video_id = response.hits.hits[i]._source.video_id;
 
-      var occurancesArray = [];
-      // Go thorugh each line in the video
-      for (var j = 0; j < response.hits.hits[i]._source.cues.length; j++) {
-        console.log("TEXT: " + response.hits.hits[i]._source.cues[j].text);
-        if (response.hits.hits[i]._source.cues[j].text) {
-          var textWords = response.hits.hits[i]._source.cues[j].text.split(" ");
+        var occurancesArray = [];
+        // Go thorugh each line in the video
+        for (var j = 0; j < response.hits.hits[i]._source.cues.length; j++) {
+          console.log("TEXT: " + response.hits.hits[i]._source.cues[j].text);
+          if (response.hits.hits[i]._source.cues[j].text) {
+            var textWords = response.hits.hits[i]._source.cues[j].text.split(" ");
 
-          var common = 0;
-          for (var x = 0; x < textWords.length; x++) {
-              for (var y = 0; y < searchKeywords.length; y++) {
-                  if(textWords[x] === searchKeywords[y]) {
-                      common++;
-                  }
-              }
+            var common = 0;
+            for (var x = 0; x < textWords.length; x++) {
+                for (var y = 0; y < searchKeywords.length; y++) {
+                    if(textWords[x] === searchKeywords[y]) {
+                        common++;
+                    }
+                }
+            }
+            occurancesArray.push(common);
+            //occurancesArray = removeConsecutive(occurancesArray);
+            if (common > 1) {
+              console.log('Timestamp: ' + response.hits.hits[i]._source.cues[j].timestamp);
+            }
           }
-          occurancesArray.push(common);
-          occurancesArray = removeConsecutive(occurancesArray);
-          if (common > 1) {
-            console.log('Timestamp: ' + response.hits.hits[i]._source.cues[j].timestamp);
-          }
+        }
+        function isAllZero(element, index, array){
+            return element == 0;
+        }
+
+        if(occurancesArray.every(isAllZero)){
+          continue;
         }
 
         console.log("COMMON OCCURANCES ARRAY: " + occurancesArray.toString());
 
-        for(var i = 0; i < occurancesArray.length; i++){
-            if(occurancesArray[i] != 0){
-                var counter = i+1;
+        for(var k = 0; k < occurancesArray.length; k++){
+            if(occurancesArray[k] != 0){
+                var counter = k+1;
                 while(occurancesArray[counter] != 0 && counter < occurancesArray.length){
                   counter++;
                 }
-                if(counter-1 != i){
+                if(counter-1 != k){
                   //array.fill(0, i+1, counter);
                   //console.log(array.fill(0, i+1, counter));
-                  occurancesArray = occurancesArray.fill(0, i+1, counter);
-                  console.log(occurancesArray.fill(0, i+1, counter));
+                  occurancesArray = occurancesArray.fill(0, k+1, counter);
+                  console.log(occurancesArray.fill(0, k+1, counter));
                 }
-                i = counter-1;
+                k = counter-1;
             }
         }
 
-        //[3,0,0, 5 ,0]
+        var dictionary = {};
+        var tempIndex = 0;
+        occurancesArray.forEach(function(element){
+          dictionary[tempIndex] = element
+          tempIndex++;
+        })
 
-        var newarray =
+        var sortable = [];
+        for (var vehicle in dictionary) {
+            sortable.push([vehicle, dictionary[vehicle]]);
+        }
+        sortable.sort(function(a, b) {
+            return a[1] - b[1];
+        });
+        sortable.reverse();
+
+        var sortable = sortable.filter(function(occurances){
+          return occurances > 0;
+        });
+
+        console.log("COMMON OCCURANCES ARRAY 2: " + sortable.toString());
+        for(var j = 0; j < sortable.length; j++){
+          sortable[j][0] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])].timestamp; // Timestamp
+        }
+
+        response.hits.hits[i]._source.cues = sortable;
+      }
+
+      res(response.hits.hits);
+    //  res(response.hits.hits);
+    });
   });
-  })
-  res(response.hits.hits);
-
 }
 
 
@@ -102,4 +139,4 @@ app.get("/search", (req, res) => {
   });
 });
 
-app.listen(process.env.PORT || 3000, () => console.log("Server started"));
+app.listen(process.env.PORT || 5000, () => console.log("Server started"));
