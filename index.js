@@ -48,20 +48,21 @@ function searchVideoData(searchPhrase) {
         for (var j = 0; j < response.hits.hits[i]._source.cues.length; j++) {
           console.log("TEXT: " + response.hits.hits[i]._source.cues[j].text);
           if (response.hits.hits[i]._source.cues[j].text) {
-            var textWords = response.hits.hits[i]._source.cues[j].text.split(" ");
+            var textWords = response.hits.hits[i]._source.cues[j].text.toLowerCase().split(" ");
 
             var common = 0;
             for (var x = 0; x < textWords.length; x++) {
                 for (var y = 0; y < searchKeywords.length; y++) {
-                    if(textWords[x] === searchKeywords[y]) {
+                    if(textWords[x].toLowerCase().includes(searchKeywords[y].toLowerCase())) {
                         common++;
                     }
                 }
             }
             occurancesArray.push(common);
             //occurancesArray = removeConsecutive(occurancesArray);
-            if (common > 1) {
+            if (common >= 1) {
               console.log('Timestamp: ' + response.hits.hits[i]._source.cues[j].timestamp);
+
             }
           }
         }
@@ -114,11 +115,10 @@ function searchVideoData(searchPhrase) {
         console.log("COMMON OCCURANCES ARRAY 2: " + sortable.toString());
         for(var j = 0; j < sortable.length; j++){
           sortable[j][2] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])]["text"];
-          console.log(          sortable[j][2] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])]["text"];
-);
           sortable[j][0] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])].timestamp; // Timestamp
         }
 
+        console.log("VICTOR", sortable);
 
         response.hits.hits[i]._source.cues = sortable;
         console.log(response.hits.hits[i]._source.cues);
