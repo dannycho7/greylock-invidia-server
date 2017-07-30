@@ -107,8 +107,8 @@ function searchVideoData(searchPhrase) {
         });
         sortable.reverse();
 
-        var sortable = sortable.filter(function(occurances){
-          return occurances > 0;
+        sortable = sortable.filter(function(occurances){
+          return occurances[1] > 0;
         });
 
         console.log("COMMON OCCURANCES ARRAY 2: " + sortable.toString());
@@ -117,12 +117,13 @@ function searchVideoData(searchPhrase) {
         }
 
         response.hits.hits[i]._source.cues = sortable;
+        console.log(response.hits.hits[i]._source.cues);
       }
 
       res(response.hits.hits);
     //  res(response.hits.hits);
     });
-  });
+  })
 }
 
 
