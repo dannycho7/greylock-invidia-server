@@ -113,8 +113,12 @@ function searchVideoData(searchPhrase) {
 
         console.log("COMMON OCCURANCES ARRAY 2: " + sortable.toString());
         for(var j = 0; j < sortable.length; j++){
+          sortable[j][2] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])]["text"];
+          console.log(          sortable[j][2] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])]["text"];
+);
           sortable[j][0] = response.hits.hits[i]._source.cues[parseInt(sortable[j][0])].timestamp; // Timestamp
         }
+
 
         response.hits.hits[i]._source.cues = sortable;
         console.log(response.hits.hits[i]._source.cues);
