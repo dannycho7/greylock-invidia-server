@@ -5,8 +5,8 @@ var express = require('express');
 var app = express();
 
 var client = new elasticsearch.Client({
-  host: 'https://search-video-ctrlf-data-domain-rjmz52jbb3uwojr7uv42rmcndm.us-west-2.es.amazonaws.com',
-  log: 'trace'
+  host: 'https://search-video-data-domain-lo5oj6jfkwcejhg6y4mirb75ie.us-west-2.es.amazonaws.com',
+  log: []
 });
 
 function connectToClient() {
