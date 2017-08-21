@@ -27,7 +27,7 @@ function searchVideoData(searchPhrase) {
   return new Promise((res, rej) => {
     client.search({
     index: 'youtube-video-data-index',
-    size: 20,
+    size: 30,
     body: {
       query: {
         match: {
